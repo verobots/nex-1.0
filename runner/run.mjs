@@ -1,5 +1,5 @@
 // OlaBench: runs "Nex 1.0" (the router + arms) or a single model on the public sets. Resumable, no duplicates.
-// Usage: node run.mjs --out <dosar> --sets arc-agi-2,simpleqa-verified --arms skill,standard [--system nex|<model>] [--limit N] [--split measure|tune|all]
+// Usage: node run.mjs --out <out-dir> --sets arc-agi-2,simpleqa-verified --arms skill,standard [--system nex|<model>] [--limit N] [--split measure|tune|all]
 // Clean stop: create a STOP file in the --out folder. Results: <out>/results.jsonl (one line per finished job).
 
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -8,8 +8,15 @@ import { ROOT, ARENA, ROUTES, MODELS, SETS, ARMS, CONCURRENCY, QUOTA_PAUSE_MIN, 
 import { callModel } from './src/cli.mjs';
 import * as arc from './src/sets/arc.mjs';
 import * as simpleqa from './src/sets/simpleqa.mjs';
+import * as gpqa from './src/sets/gpqa.mjs';
+import * as hle from './src/sets/hle.mjs';
+import { make as matharena } from './src/sets/matharena.mjs';
+import * as gaia from './src/sets/gaia.mjs';
 
-const SET_MODULES = { 'arc-agi-2': arc, 'simpleqa-verified': simpleqa };
+const SET_MODULES = {
+  'arc-agi-2': arc, 'simpleqa-verified': simpleqa, 'gpqa-diamond': gpqa, hle,
+  'aime-2026': matharena('aime-2026', true), 'hmmt-feb-2026': matharena('hmmt-feb-2026', false), gaia,
+};
 const argv = Object.fromEntries(process.argv.slice(2).join(' ').split('--').filter(Boolean).map((s) => { const [k, ...v] = s.trim().split(' '); return [k, v.join(' ') || true]; }));
 const OUT = argv.out;
 if (!OUT) { console.error('missing --out'); process.exit(2); }
@@ -26,7 +33,7 @@ const log = (...a) => { const l = new Date().toISOString() + ' ' + a.join(' '); 
 function routeFor(set) { return SYSTEM === 'nex' ? ROUTES[SETS[set].route] || ROUTES.default : MODELS[SYSTEM]; }
 
 function armText(set, arm) {
-  const parts = [ISOLATION];
+  const parts = [SETS[set].isolation || ISOLATION];
   if (arm !== 'standard') parts.push(readFileSync(join(ROOT, 'arms', 'workspace.md'), 'utf8').trim());
   if (arm === 'skill') parts.push(readFileSync(join(ROOT, 'skills', SETS[set].skill), 'utf8').trim());
   return parts.join('\n\n---\n\n');
@@ -57,8 +64,9 @@ async function runJob(job) {
   const safe = job.key.replace(/[|.:]/g, '_');
   const cwd = join(ARENA, safe);
   const mod = SET_MODULES[job.set];
+  if (mod.setup) mod.setup(job.item, cwd);
   const text = armText(job.set, job.arm) + '\n\n---\n\n' + mod.prompt(job.item);
-  const r = await callModel(job.route, text, { cwd, timeoutMs: SETS[job.set].timeoutMin * 60000, logBase: join(OUT, 'logs', safe) });
+  const r = await callModel(job.route, text, { cwd, timeoutMs: SETS[job.set].timeoutMin * 60000, logBase: join(OUT, 'logs', safe), images: mod.images ? mod.images(job.item) : [] });
   if (r.quota) return { quota: true };
   const base = {
     key: job.key, system: SYSTEM, set: job.set, arm: job.arm, item: job.item.id, split: job.item.split,
@@ -69,7 +77,7 @@ async function runJob(job) {
   writeFileSync(join(OUT, 'logs', safe + '.answer.md'), r.text);
   const g = await mod.grade(job.item, r.text, { cwd, logBase: join(OUT, 'logs', safe) });
   if (g.error) return { row: { ...base, status: 'error', error: g.error } };
-  return { row: { ...base, status: 'ok', score: g.score, detail: g.detail, answer: g.answer } };
+  return { row: { ...base, status: 'ok', score: g.score, detail: g.detail, answer: g.answer, confidence: g.confidence } };
 }
 
 const pausedUntil = {};

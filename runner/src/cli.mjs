@@ -6,9 +6,10 @@ import { join } from 'node:path';
 import { CLAUDE_EXE, CODEX_JS, AGY_EXE, AGY_SETTINGS, AGY_HOOKS, CLAUDE_CONFIG, QUOTA_PATTERNS } from '../config.mjs';
 
 // route: { cli, model, effort }; returns { text, usage, sec, exit, timedOut, quota, tools }.
-export function callModel(route, prompt, { cwd, timeoutMs, logBase }) {
+export function callModel(route, prompt, { cwd, timeoutMs, logBase, images = [] }) {
   mkdirSync(cwd, { recursive: true });
-  const { cmd, args, env, setup, input } = COMMANDS[route.cli](route);
+  if (images.length && route.cli !== 'codex') return Promise.resolve({ text: '', usage: null, error: `images not supported on ${route.cli}` });
+  const { cmd, args, env, setup, input } = COMMANDS[route.cli](route, images);
   if (setup) setup(cwd);
   return new Promise((done) => {
     const start = Date.now();
@@ -36,10 +37,13 @@ function kill(child) {
 }
 
 const COMMANDS = {
-  codex(r) {
+  codex(r, images = []) {
     // read-only sandbox: the model can think and run read-only commands in its empty directory, nothing else.
     const base = ['exec', '--json', '-m', r.model, '--skip-git-repo-check', '-s', 'read-only'];
     if (r.effort) base.push('-c', `model_reasoning_effort="${r.effort}"`);
+    // --image=<f>: the '=' form, otherwise -i also swallows '-' (the prompt on stdin).
+    for (const f of images) base.push(`--image=${f}`);
+    if (r.web) base.push('-c', 'web_search="live"');
     base.push('-');
     return CODEX_JS ? { cmd: process.execPath, args: [CODEX_JS, ...base], env: { ...process.env } } : { cmd: 'codex', args: base, env: { ...process.env } };
   },

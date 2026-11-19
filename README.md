@@ -37,6 +37,17 @@ Prediction files in the ARC Prize format: [results/arc-agi-2/](results/arc-agi-2
 | workspace | 96.3% | 2.1 | +0.7 ±1.8 |
 | standard | 95.7% | 2.3 | |
 
+**Official Hugging Face benchmark leaderboards** (results reported from the model repo [verobots/nex-1.0](https://huggingface.co/verobots/nex-1.0) via `.eval_results/`; per-item rows in [results/](results)):
+
+| Benchmark (HF dataset) | Route | Nex 1.0 (skill arm) | Status |
+|---|---|---:|---|
+| AIME 2026 (`MathArena/aime_2026`) | `gpt-6.2-astra` / max | 100.0% (30/30) | published |
+| HMMT Feb 2026 (`MathArena/hmmt_feb_2026`) | `gpt-6.2-astra` / max | | running |
+| GPQA Diamond (`Idavidrein/gpqa`, task `diamond`) | `gpt-6.2-astra` / max | | running |
+| Humanity's Last Exam (`cais/hle`) | `gpt-6.2-astra` / max | | running |
+
+GPQA and HLE questions are never published here (dataset terms); result rows contain only item ids, the extracted answer and the grade. GAIA (web + files, route `web-agent`) is submitted to the official [GAIA leaderboard](https://huggingface.co/spaces/gaia-benchmark/leaderboard), which scores the hidden test answers itself.
+
 ### Read these numbers carefully
 
 - **ARC-AGI-2 here is the public evaluation set**, not the semi-private set that ARC Prize uses for verified scores. The public set has been online since 2025 and may be in the models' training data. Treat 98.8% as an upper bound, not as a verified ARC-AGI-2 score.
@@ -68,7 +79,12 @@ export OLABENCH_CODEX_JS=/path/to/@openai/codex/bin/codex.js   # or leave empty 
 export OLABENCH_CLAUDE_EXE=claude
 export CLAUDE_CODE_OAUTH_TOKEN=...                              # from `claude setup-token`
 
+# Hugging Face sets (gated ones need an accepted license + HF token): download into data/<set>/ and convert
+python runner/prep/hf-sets.py
+
 node runner/run.mjs --out out/nex --sets arc-agi-2,simpleqa-verified --arms skill,standard,workspace
+node runner/run.mjs --out out/nex-hf --sets aime-2026,hmmt-feb-2026,gpqa-diamond --arms skill,standard
+node runner/publish-hf.mjs <hf-model-repo-clone> out/nex-hf    # writes .eval_results/*.yaml for complete sets
 node runner/report.mjs out/nex     # report.md, report.json, arc-submission-<system>-<arm>.json
 ```
 

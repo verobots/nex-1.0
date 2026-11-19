@@ -1,5 +1,5 @@
 // OlaBench report: score per system x set x arm, with 95% confidence interval, tokens and time; plus the ARC submission file.
-// Usage: node report.mjs <dosar-out>  -> report.json, report.md, arc-submission-<system>-<arm>.json
+// Usage: node report.mjs <out-dir>  -> report.json, report.md, arc-submission-<system>-<arm>.json
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,7 +12,8 @@ for (const l of readFileSync(join(OUT, 'results.jsonl'), 'utf8').split('\n')) if
 const all = [...rows.values()];
 
 function stats(list) {
-  const ok = list.filter((r) => r.status === 'ok');
+  // Items without a local score (e.g. GAIA test, scored by the server) are left out of the score.
+  const ok = list.filter((r) => r.status === 'ok' && typeof r.score === 'number');
   const n = ok.length, mean = n ? ok.reduce((s, r) => s + r.score, 0) / n : 0;
   const sd = n > 1 ? Math.sqrt(ok.reduce((s, r) => s + (r.score - mean) ** 2, 0) / (n - 1)) : 0;
   const half = n ? 1.96 * sd / Math.sqrt(n) : 0;

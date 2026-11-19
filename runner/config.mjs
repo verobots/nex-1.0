@@ -26,6 +26,9 @@ export const ROUTES = {
   'abstract-reasoning': { cli: 'codex', model: 'gpt-6.2-astra', effort: 'max', why: 'ARC-AGI-2: official ARC Prize leader' },
   'factuality': { cli: 'claude', model: 'claude-fable-5-2', effort: 'max', why: 'SimpleQA Verified: best public score (Epoch AI)' },
   'science-qa': { cli: 'codex', model: 'gpt-6.2-astra', effort: 'max', why: 'GPQA Diamond: best public score (Epoch AI)' },
+  'competition-math': { cli: 'codex', model: 'gpt-6.2-astra', effort: 'max', why: 'OTIS Mock AIME: gpt-6.2-astra 100% (Epoch AI); the FrontierMath leader was unavailable (quota) on 2026-11-19' },
+  'expert-qa': { cli: 'codex', model: 'gpt-6.2-astra', effort: 'max', why: 'HLE: no Epoch AI data; closest test is GPQA Diamond, won by gpt-6.2-astra' },
+  'web-agent': { cli: 'codex', model: 'gpt-6.2-astra', effort: 'max', web: true, why: 'GAIA: needs web search + files; Codex has native web search' },
   'office-agent': { cli: 'agy', model: 'gemini-4-carbon-high', effort: null, why: 'APEX-Agents: best public score (Epoch AI); max accepted effort = high' },
   'default': { cli: 'claude', model: 'claude-fable-5-2', effort: 'max', why: 'wins the most Epoch AI benchmarks among the candidate models' },
 };
@@ -44,6 +47,13 @@ export const ARMS = ['standard', 'workspace', 'skill'];
 export const SETS = {
   'arc-agi-2': { route: 'abstract-reasoning', timeoutMin: 45, skill: 'arc-agi-2.md' },
   'simpleqa-verified': { route: 'factuality', timeoutMin: 12, skill: 'simpleqa-verified.md', tune: 50, measure: 300, seed: 20261118 },
+  // Sets with an official Hugging Face leaderboard (task_id from the dataset's eval.yaml).
+  'gpqa-diamond': { route: 'science-qa', timeoutMin: 30, skill: 'gpqa-diamond.md', hf: { id: 'Idavidrein/gpqa', task: 'diamond' } },
+  'aime-2026': { route: 'competition-math', timeoutMin: 45, skill: 'competition-math.md', hf: { id: 'MathArena/aime_2026', task: 'MathArena/aime_2026' } },
+  'hmmt-feb-2026': { route: 'competition-math', timeoutMin: 45, skill: 'competition-math.md', hf: { id: 'MathArena/hmmt_feb_2026', task: 'MathArena/hmmt_feb_2026' } },
+  'hle': { route: 'expert-qa', timeoutMin: 45, skill: 'hle.md', hf: { id: 'cais/hle', task: 'hle' } },
+  // GAIA: the only set with web access; split validation (scored locally) / test (submitted to the leaderboard).
+  'gaia': { route: 'web-agent', timeoutMin: 60, skill: 'gaia.md', isolation: 'This is a self-contained task. You may search the web and read the attached file in the current directory. Do not read or modify any other files on this computer. Do not look up this question or its answer in copies of the GAIA benchmark, its datasets, leaderboards, papers or solution repositories; find the answer from the original sources.' },
 };
 // SimpleQA judge: a different model family from the judged model, official simple-evals grading template.
 export const JUDGE = { cli: 'codex', model: 'gpt-6.1-sol', effort: 'medium', timeoutMin: 6 };
