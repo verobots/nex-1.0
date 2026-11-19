@@ -1,0 +1,148 @@
+{
+  "generated": "2026-11-19T14:02:58.512Z",
+  "table": [
+    {
+      "system": "nex",
+      "set": "arc-agi-2",
+      "split": "measure",
+      "arm": "skill",
+      "n": 120,
+      "errors": 0,
+      "score": 98.8,
+      "ci95": 1.8,
+      "avgSec": 354,
+      "avgTokens": {
+        "input": 276286,
+        "output": 13519,
+        "reasoning": 5280
+      },
+      "model": "gpt-6.2-astra",
+      "effort": "max",
+      "vsStandard": {
+        "n": 120,
+        "delta": 0.8,
+        "ci95": 2.8
+      }
+    },
+    {
+      "system": "nex",
+      "set": "arc-agi-2",
+      "split": "measure",
+      "arm": "standard",
+      "n": 120,
+      "errors": 0,
+      "score": 97.9,
+      "ci95": 2.1,
+      "avgSec": 283,
+      "avgTokens": {
+        "input": 187990,
+        "output": 10879,
+        "reasoning": 5991
+      },
+      "model": "gpt-6.2-astra",
+      "effort": "max"
+    },
+    {
+      "system": "nex",
+      "set": "arc-agi-2",
+      "split": "measure",
+      "arm": "workspace",
+      "n": 120,
+      "errors": 0,
+      "score": 98.8,
+      "ci95": 1.8,
+      "avgSec": 279,
+      "avgTokens": {
+        "input": 202368,
+        "output": 11658,
+        "reasoning": 6147
+      },
+      "model": "gpt-6.2-astra",
+      "effort": "max",
+      "vsStandard": {
+        "n": 120,
+        "delta": 0.8,
+        "ci95": 2.8
+      }
+    },
+    {
+      "system": "nex",
+      "set": "simpleqa-verified",
+      "split": "measure",
+      "arm": "skill",
+      "n": 299,
+      "errors": 1,
+      "score": 97,
+      "ci95": 1.9,
+      "avgSec": 10,
+      "avgTokens": {
+        "input": 5786,
+        "output": 906,
+        "reasoning": 0
+      },
+      "model": "claude-fable-5-2",
+      "effort": "max",
+      "simpleqa": {
+        "correct": 97,
+        "correctGivenAttempted": 97,
+        "f1": 97
+      },
+      "vsStandard": {
+        "n": 299,
+        "delta": 1,
+        "ci95": 1.7
+      }
+    },
+    {
+      "system": "nex",
+      "set": "simpleqa-verified",
+      "split": "measure",
+      "arm": "standard",
+      "n": 300,
+      "errors": 0,
+      "score": 95.7,
+      "ci95": 2.3,
+      "avgSec": 9,
+      "avgTokens": {
+        "input": 5008,
+        "output": 768,
+        "reasoning": 0
+      },
+      "model": "claude-fable-5-2",
+      "effort": "max",
+      "simpleqa": {
+        "correct": 95.7,
+        "correctGivenAttempted": 95.7,
+        "f1": 95.7
+      }
+    },
+    {
+      "system": "nex",
+      "set": "simpleqa-verified",
+      "split": "measure",
+      "arm": "workspace",
+      "n": 300,
+      "errors": 0,
+      "score": 96.3,
+      "ci95": 2.1,
+      "avgSec": 11,
+      "avgTokens": {
+        "input": 5230,
+        "output": 949,
+        "reasoning": 0
+      },
+      "model": "claude-fable-5-2",
+      "effort": "max",
+      "simpleqa": {
+        "correct": 96.3,
+        "correctGivenAttempted": 96.3,
+        "f1": 96.3
+      },
+      "vsStandard": {
+        "n": 300,
+        "delta": 0.7,
+        "ci95": 1.8
+      }
+    }
+  ]
+}
